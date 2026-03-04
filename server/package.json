@@ -1,0 +1,33 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Backend do BarberFlow",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "node --loader ts-node/esm --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.x.x",
+    "@trpc/server": "^10.x.x",
+    "cors": "^2.8.5",
+    "date-fns": "^3.x.x",
+    "dotenv": "^16.x.x",
+    "drizzle-orm": "^0.x.x",
+    "express": "^4.x.x",
+    "postgres": "^3.x.x",
+    "superjson": "^2.x.x",
+    "uuid": "^9.x.x",
+    "zod": "^3.x.x"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.x.x",
+    "@types/uuid": "^9.x.x",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.x.x"
+  }
+}

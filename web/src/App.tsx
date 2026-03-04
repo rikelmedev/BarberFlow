@@ -1,0 +1,91 @@
+import { trpc } from './lib/trpc';
+import { Scissors, Calendar, Phone, User, Clock } from 'lucide-react';
+
+function App() {
+  // Chamada ao servidor para listar os últimos 10 agendamentos
+  const appointments = trpc.appointments.list.useQuery({ limit: 10 });
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+      <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-500 p-2 rounded-lg">
+              <Scissors className="w-6 h-6 text-zinc-950" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">BarberFlow</h1>
+          </div>
+          <div className="text-sm text-zinc-400 font-medium">Painel Administrativo</div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-white">Agendamentos</h2>
+            <p className="text-zinc-400 mt-1">Visualize e gerencie os horários marcados.</p>
+          </div>
+        </div>
+
+        {/* Lista de Agendamentos */}
+        <div className="grid gap-4">
+          {appointments.isLoading ? (
+            <div className="animate-pulse space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-zinc-900 rounded-xl border border-zinc-800" />
+              ))}
+            </div>
+          ) : appointments.data?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/50 border border-dashed border-zinc-800 rounded-2xl">
+              <Calendar className="w-12 h-12 text-zinc-700 mb-4" />
+              <p className="text-zinc-500 text-lg">Nenhum agendamento encontrado no banco de dados.</p>
+            </div>
+          ) : (
+            appointments.data?.map((appt) => (
+              <div 
+                key={appt.id} 
+                className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl hover:border-amber-500/50 transition-colors flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="flex flex-col items-center justify-center bg-zinc-800 w-16 h-16 rounded-lg border border-zinc-700 text-zinc-300">
+                    <span className="text-xs uppercase font-bold">Hoje</span>
+                    <span className="text-xl font-black text-amber-500">
+                      {new Date(appt.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <User className="w-4 h-4 text-zinc-500" />
+                      <h3 className="font-bold text-white text-lg">{appt.clientName}</h3>
+                    </div>
+                    <div className="flex gap-4 text-sm text-zinc-400">
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5" /> {appt.clientPhone}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> 
+                        {appt.service?.name ?? 'Serviço não definido'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    appt.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                  }`}>
+                    {appt.status}
+                  </span>
+                  <span className="text-xs text-zinc-600 font-mono">{appt.id.split('-')[0]}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default App;
