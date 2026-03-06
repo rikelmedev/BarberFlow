@@ -1,33 +1,77 @@
 import { useState } from 'react';
 import { trpc } from './lib/trpc';
-import { Scissors, Calendar, Phone, User, Clock, UserPlus, Loader2 } from 'lucide-react';
+import { 
+  Scissors, 
+  Calendar, 
+  Phone, 
+  User, 
+  Clock, 
+  UserPlus, 
+  Loader2, 
+  PlusCircle, 
+  DollarSign 
+} from 'lucide-react';
 
 function App() {
-  const [name, setName] = useState('');
-  
-  // Lista agendamentos
+  // --- ESTADOS PARA BARBEIROS ---
+  const [profName, setProfName] = useState('');
+
+  // --- ESTADOS PARA SERVIÇOS ---
+  const [serviceName, setServiceName] = useState('');
+  const [servicePrice, setServicePrice] = useState('');
+  const [serviceDuration, setServiceDuration] = useState(30);
+  const [serviceDescription, setServiceDescription] = useState('');
+
+  // Consultas e Mutations
   const appointments = trpc.appointments.list.useQuery({ limit: 10 });
   
-  // Cadastra profissional
+  // Mutation para Profissionais
   const createProfessional = trpc.professionals.create.useMutation({
     onSuccess: () => {
-      setName('');
-      alert("Barbeiro cadastrado!");
-      appointments.refetch();
+      setProfName('');
+      alert("Barbeiro cadastrado com sucesso! 💈");
     }
   });
 
-  const handleAdd = (e: React.FormEvent) => {
+  // Mutation para Serviços
+  const createService = trpc.services.create.useMutation({
+    onSuccess: () => {
+      setServiceName('');
+      setServicePrice('');
+      setServiceDuration(30);
+      setServiceDescription('');
+      alert("Serviço cadastrado com sucesso! ✂️");
+    },
+    onError: (err) => {
+      alert("Erro ao cadastrar serviço: " + err.message);
+    }
+  });
+
+  // Handlers de envio
+  const handleAddProfessional = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!profName.trim()) return;
     createProfessional.mutate({
-      name,
+      name: profName,
       profileId: '11111111-1111-1111-1111-111111111111' 
     });
   };
 
+  const handleAddService = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceName.trim() || !servicePrice.trim()) return;
+
+    createService.mutate({
+      name: serviceName,
+      price: servicePrice,
+      durationMin: Number(serviceDuration),
+      description: serviceDescription,
+      profileId: '11111111-1111-1111-1111-111111111111'
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased font-sans">
       <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -41,25 +85,83 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-10">
-        {/* Formulário de Cadastro */}
-        <section className="mb-10 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <UserPlus className="text-amber-500" /> Novo Barbeiro
-          </h3>
-          <form onSubmit={handleAdd} className="flex gap-3">
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nome do profissional"
-              className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2"
-            />
-            <button type="submit" className="bg-amber-500 text-zinc-950 font-bold px-6 py-2 rounded-lg">
-              {createProfessional.isLoading ? "..." : "Cadastrar"}
-            </button>
-          </form>
-        </section>
+        
+        {/* GRID DE FORMULÁRIOS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          
+          {/* Formulário: Novo Barbeiro */}
+          <section className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-sm">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <UserPlus className="text-amber-500 w-5 h-5" /> Novo Barbeiro
+            </h3>
+            <form onSubmit={handleAddProfessional} className="flex flex-col gap-3">
+              <input 
+                type="text" 
+                value={profName}
+                onChange={(e) => setProfName(e.target.value)}
+                placeholder="Nome do barbeiro"
+                className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 focus:border-amber-500 outline-none transition-all"
+                required
+              />
+              <button 
+                type="submit" 
+                disabled={createProfessional.isLoading}
+                className="bg-amber-500 text-zinc-950 font-bold py-2 rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors"
+              >
+                {createProfessional.isLoading ? "..." : "Cadastrar Barbeiro"}
+              </button>
+            </form>
+          </section>
 
+          {/* Formulário: Novo Serviço */}
+          <section className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-sm">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <PlusCircle className="text-emerald-500 w-5 h-5" /> Novo Serviço
+            </h3>
+            <form onSubmit={handleAddService} className="grid grid-cols-2 gap-3">
+              <input 
+                type="text" 
+                placeholder="Ex: Corte Social" 
+                value={serviceName}
+                onChange={(e) => setServiceName(e.target.value)}
+                className="col-span-2 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 focus:border-emerald-500 outline-none transition-all"
+                required
+              />
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+                <input 
+                  type="text" 
+                  placeholder="Preço" 
+                  value={servicePrice}
+                  onChange={(e) => setServicePrice(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 focus:border-emerald-500 outline-none transition-all"
+                  required
+                />
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+                <input 
+                  type="number" 
+                  placeholder="Minutos" 
+                  value={serviceDuration}
+                  onChange={(e) => setServiceDuration(Number(e.target.value))}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 focus:border-emerald-500 outline-none transition-all"
+                  required
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={createService.isLoading}
+                className="col-span-2 bg-emerald-600 text-white font-bold py-2 rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors mt-1"
+              >
+                {createService.isLoading ? "..." : "Cadastrar Serviço"}
+              </button>
+            </form>
+          </section>
+
+        </div>
+
+        {/* LISTA DE AGENDAMENTOS */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-white">Agendamentos</h2>
@@ -67,7 +169,6 @@ function App() {
           </div>
         </div>
 
-        {/* Lista de Agendamentos */}
         <div className="grid gap-4">
           {appointments.isLoading ? (
             <div className="animate-pulse space-y-4">
@@ -88,7 +189,7 @@ function App() {
               >
                 <div className="flex items-center gap-6">
                   <div className="flex flex-col items-center justify-center bg-zinc-800 w-16 h-16 rounded-lg border border-zinc-700 text-zinc-300">
-                    <span className="text-xs uppercase font-bold">Hoje</span>
+                    <span className="text-xs uppercase font-bold text-zinc-500">Hoje</span>
                     <span className="text-xl font-black text-amber-500">
                       {new Date(appt.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
