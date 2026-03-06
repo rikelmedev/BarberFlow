@@ -1,4 +1,3 @@
-import { services } from "src/db/schema.js";
 import { router } from "../trpc.js";
 import { appointmentsRouter } from "./appointments.js";
 import { professionalsRouter } from "./professionals.js"; 
