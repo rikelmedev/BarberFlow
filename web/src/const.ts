@@ -1,9 +1,10 @@
+/// <reference types="vite/client" />
 const VITE_MANUS_AUTH_URL = import.meta.env.VITE_MANUS_AUTH_URL as string | undefined;
 const VITE_APP_URL = import.meta.env.VITE_APP_URL as string | undefined;
 const VITE_API_URL = import.meta.env.VITE_API_URL as string | undefined;
 
-export const APP_URL = VITE_APP_URL ?? "https://fuzzy-space-palm-tree-wr4vjpvv565vhgj9x-5173.app.github.dev/";
 export const API_URL = VITE_API_URL ?? "https://fuzzy-space-palm-tree-wr4vjpvv565vhgj9x-3001.app.github.dev/";
+export const APP_URL = VITE_APP_URL ?? "https://fuzzy-space-palm-tree-wr4vjpvv565vhgj9x-5173.app.github.dev/";
 export const TRPC_URL = `${API_URL}/trpc`;
 
 

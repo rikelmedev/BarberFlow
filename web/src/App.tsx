@@ -1,9 +1,30 @@
+import { useState } from 'react';
 import { trpc } from './lib/trpc';
-import { Scissors, Calendar, Phone, User, Clock } from 'lucide-react';
+import { Scissors, Calendar, Phone, User, Clock, UserPlus, Loader2 } from 'lucide-react';
 
 function App() {
-  // Chamada ao servidor para listar os últimos 10 agendamentos
+  const [name, setName] = useState('');
+  
+  // Lista agendamentos
   const appointments = trpc.appointments.list.useQuery({ limit: 10 });
+  
+  // Cadastra profissional
+  const createProfessional = trpc.professionals.create.useMutation({
+    onSuccess: () => {
+      setName('');
+      alert("Barbeiro cadastrado!");
+      appointments.refetch();
+    }
+  });
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createProfessional.mutate({
+      name,
+      profileId: '11111111-1111-1111-1111-111111111111' 
+    });
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
@@ -20,6 +41,25 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-10">
+        {/* Formulário de Cadastro */}
+        <section className="mb-10 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <UserPlus className="text-amber-500" /> Novo Barbeiro
+          </h3>
+          <form onSubmit={handleAdd} className="flex gap-3">
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nome do profissional"
+              className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2"
+            />
+            <button type="submit" className="bg-amber-500 text-zinc-950 font-bold px-6 py-2 rounded-lg">
+              {createProfessional.isLoading ? "..." : "Cadastrar"}
+            </button>
+          </form>
+        </section>
+
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-white">Agendamentos</h2>
